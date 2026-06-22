@@ -24,6 +24,7 @@ import {
   width,
 } from '@expo/ui/jetpack-compose/modifiers';
 import { type ImageSourcePropType } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   DISTANCE_TOTAL,
@@ -49,6 +50,7 @@ const ORANGE = '#FB5B2D';
 // stops — a deliberate teaching point in the demo).
 export default function HealthSummaryScreen() {
   const colors = useMaterialColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <Host style={{ flex: 1 }}>
@@ -57,7 +59,7 @@ export default function HealthSummaryScreen() {
           fillMaxSize(),
           background(colors.background),
           verticalScroll(),
-          padding(20, 20, 20, 20),
+          padding(20, 20 + insets.top, 20, 20),
         ]}
         verticalArrangement={{ spacedBy: 16 }}>
         <Row modifiers={[fillMaxWidth()]} verticalAlignment="center">
