@@ -21,6 +21,10 @@ const ITEMS: MenuItem[] = [
   { href: '/settings', subtitle: 'Form · Toggle · grouped rows', title: 'Settings' },
   { href: '/new-event', subtitle: 'TextField · DatePicker · Picker (form sheet)', title: 'New Event' },
   { href: '/health/summary', subtitle: 'Charts · cards · native tabs', title: 'Health Summary' },
+  // iOS-only: real WidgetKit home screen widget + a delivery Live Activity.
+  ...(Platform.OS === 'ios'
+    ? [{ href: '/widget-demo', subtitle: 'Home screen widget · Live Activity', title: 'Widgets' } as MenuItem]
+    : []),
 ];
 
 export default function HomeScreen() {
