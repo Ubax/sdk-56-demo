@@ -61,7 +61,8 @@ src/
   app/                 # Expo Router routes (re-export screens)
   screens/             # *.ios.tsx (SwiftUI) · *.android.tsx (Compose) · *.tsx (fallback)
                        # *.data.ts — shared, platform-agnostic data
-  components/          # shared + platform-split UI pieces
+                       # plus screen-specific components (new-event-header, web-badge)
+  components/          # shared UI grouped by role: themed/ · list/ · splash/
   constants/theme.ts   # Colors / Spacing tokens
   styles.ts            # SwiftUI-only style helpers (iOS)
 ```
