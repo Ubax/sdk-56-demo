@@ -173,12 +173,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    flexDirection: 'row',
+    flexGrow: 1,
     justifyContent: 'center',
   },
   safeArea: {
     alignSelf: 'center',
-    flex: 1,
     gap: Spacing.three,
     justifyContent: 'center',
     maxWidth: MaxContentWidth,
