@@ -11,7 +11,6 @@ export default function SearchScreen() {
   return (
     <>
       <Stack.Title large>Search</Stack.Title>
-      {/* Native search field in the header (iOS shows it under the large title). */}
       <Stack.SearchBar
         placeholder="Photos, People, Places"
         onChangeText={(e) => setQuery(e.nativeEvent.text)}

@@ -2,17 +2,14 @@ import { Image } from "expo-image";
 import { Stack } from "expo-router";
 import { SymbolView, type AndroidSymbol, type SFSymbol } from "expo-symbols";
 import type { ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { PlatformColor, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useToolbarIcons } from "@/lib/use-toolbar-icons";
 
-const BLUE = "#007AFF";
+const isIOS = process.env.EXPO_OS === "ios";
 
-// A recreation of the iOS Photos "Collections" tab: Memories / Pinned / Albums /
-// People & Pets sections over a scroll view, with the account + overflow header
-// buttons. The data is static placeholder content.
 export default function CollectionsScreen() {
   const theme = useTheme();
   const icons = useToolbarIcons();
@@ -87,16 +84,6 @@ export default function CollectionsScreen() {
 
 type IconName = { ios: SFSymbol; android: AndroidSymbol };
 
-function Icon({ name, size, color }: { name: IconName; size: number; color: string }) {
-  return (
-    <SymbolView
-      name={{ ios: name.ios, android: name.android, web: name.android }}
-      size={size}
-      tintColor={color}
-    />
-  );
-}
-
 function Section({
   title,
   leadingArrow,
@@ -115,19 +102,19 @@ function Section({
         <View style={styles.sectionTitleRow}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
           {leadingArrow && (
-            <Icon
+            <SymbolView
               name={{ ios: "chevron.right", android: "chevron_right" }}
               size={18}
-              color={theme.textSecondary}
+              tintColor={theme.textSecondary}
             />
           )}
         </View>
         <View style={styles.sectionAccessories}>
           {trailing}
-          <Icon
+          <SymbolView
             name={{ ios: "chevron.down", android: "expand_more" }}
             size={20}
-            color={theme.textSecondary}
+            tintColor={theme.textSecondary}
           />
         </View>
       </View>
@@ -151,7 +138,7 @@ function EmptyCard({
   return (
     <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
       <View style={styles.cardTopRow}>
-        <Icon name={icon} size={26} color={theme.textSecondary} />
+        <SymbolView name={icon} size={26} tintColor={theme.textSecondary} />
         {action}
       </View>
       <View>
@@ -173,7 +160,7 @@ function Pill({ label, onPress }: { label: string; onPress: () => void }) {
         pressed && styles.pressed,
       ]}
     >
-      <Text style={[styles.pillText, { color: BLUE }]}>{label}</Text>
+      <Text style={styles.pillText}>{label}</Text>
     </Pressable>
   );
 }
@@ -187,6 +174,7 @@ function PinnedCard({
   icon?: IconName;
   imageSeed?: string;
 }) {
+  const theme = useTheme();
   return (
     <View style={styles.pinnedCard}>
       {imageSeed ? (
@@ -201,7 +189,7 @@ function PinnedCard({
       )}
       {icon && (
         <View style={styles.pinnedIcon}>
-          <Icon name={icon} size={20} color="#FFFFFF" />
+          <SymbolView name={icon} size={20} tintColor={theme.text} />
         </View>
       )}
       <Text style={styles.pinnedLabel}>{label}</Text>
@@ -292,6 +280,7 @@ const styles = StyleSheet.create({
   pillText: {
     fontSize: 15,
     fontWeight: "600",
+    color: isIOS ? PlatformColor("systemBlue") : "#007AFF",
   },
   pressed: {
     opacity: 0.6,
