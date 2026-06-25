@@ -1,4 +1,6 @@
 // Picker option lists, shared by the iOS (SwiftUI) and Android (Compose) screens.
+export const KIND_OPTIONS = ['Event', 'Reminder'];
+
 export const TRAVEL_TIME_OPTIONS = ['None', '15 minutes', '30 minutes', '1 hour'];
 
 export const REPEAT_OPTIONS = ['Never', 'Every Day', 'Every Week', 'Every Month', 'Every Year'];

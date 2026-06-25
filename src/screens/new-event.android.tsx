@@ -31,10 +31,13 @@ import {
   verticalScroll,
   weight,
 } from '@expo/ui/jetpack-compose/modifiers';
+import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import { useState } from 'react';
+import { View } from 'react-native';
 
 import {
   ALERT_OPTIONS,
+  KIND_OPTIONS,
   ONE_HOUR_IN_MS,
   REPEAT_OPTIONS,
   TRAVEL_TIME_OPTIONS,
@@ -49,6 +52,7 @@ const noop = () => {};
 // OutlinedTextField, Switch, ExposedDropdownMenuBox menus, and a DatePickerDialog.
 export default function NewEventScreen() {
   const colors = useMaterialColors();
+  const [kind, setKind] = useState(0);
   const [allDay, setAllDay] = useState(false);
   const now = new Date();
   const [startsAt, setStartsAt] = useState(now);
@@ -58,108 +62,116 @@ export default function NewEventScreen() {
   const [alert, setAlert] = useState(ALERT_OPTIONS[0]);
 
   return (
-    <Host style={{ flex: 1 }}>
-      <Column
-        modifiers={[
-          fillMaxSize(),
-          background(colors.background),
-          verticalScroll(),
-          padding(16, 16, 16, 16),
-        ]}
-        verticalArrangement={{ spacedBy: 16 }}>
-        <Group colors={colors}>
-          <Column modifiers={[fillMaxWidth(), padding(12, 12, 12, 12)]} verticalArrangement={{ spacedBy: 12 }}>
-            <OutlinedTextField modifiers={[fillMaxWidth()]} singleLine>
-              <OutlinedTextField.Label>
-                <Text>Title</Text>
-              </OutlinedTextField.Label>
-            </OutlinedTextField>
-            <OutlinedTextField modifiers={[fillMaxWidth()]} singleLine>
-              <OutlinedTextField.Label>
-                <Text>Location or Video Call</Text>
-              </OutlinedTextField.Label>
-            </OutlinedTextField>
-          </Column>
-        </Group>
+    <View style={{ backgroundColor: colors.background, flex: 1 }}>
+      <SegmentedControl
+        values={KIND_OPTIONS}
+        selectedIndex={kind}
+        onChange={(event) => setKind(event.nativeEvent.selectedSegmentIndex)}
+        style={{ margin: 16 }}
+      />
+      <Host style={{ flex: 1 }}>
+        <Column
+          modifiers={[
+            fillMaxSize(),
+            background(colors.background),
+            verticalScroll(),
+            padding(16, 0, 16, 16),
+          ]}
+          verticalArrangement={{ spacedBy: 16 }}>
+          <Group colors={colors}>
+            <Column modifiers={[fillMaxWidth(), padding(12, 12, 12, 12)]} verticalArrangement={{ spacedBy: 12 }}>
+              <OutlinedTextField modifiers={[fillMaxWidth()]} singleLine>
+                <OutlinedTextField.Label>
+                  <Text>Title</Text>
+                </OutlinedTextField.Label>
+              </OutlinedTextField>
+              <OutlinedTextField modifiers={[fillMaxWidth()]} singleLine>
+                <OutlinedTextField.Label>
+                  <Text>Location or Video Call</Text>
+                </OutlinedTextField.Label>
+              </OutlinedTextField>
+            </Column>
+          </Group>
 
-        <Group colors={colors}>
-          <Row modifiers={[fillMaxWidth(), padding(16, 6, 16, 6)]} verticalAlignment="center">
-            <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
-              All-day
-            </Text>
-            <Spacer modifiers={[weight(1)]} />
-            <Switch value={allDay} onCheckedChange={setAllDay} />
-          </Row>
-          <HorizontalDivider color={colors.outlineVariant} />
-          <DateRow colors={colors} label="Starts" date={startsAt} allDay={allDay} onChange={setStartsAt} />
-          <HorizontalDivider color={colors.outlineVariant} />
-          <DateRow colors={colors} label="Ends" date={endsAt} allDay={allDay} onChange={setEndsAt} />
-          <HorizontalDivider color={colors.outlineVariant} />
-          <MenuField
-            colors={colors}
-            label="Travel Time"
-            options={TRAVEL_TIME_OPTIONS}
-            selected={travelTime}
-            onSelect={setTravelTime}
-          />
-        </Group>
+          <Group colors={colors}>
+            <Row modifiers={[fillMaxWidth(), padding(16, 6, 16, 6)]} verticalAlignment="center">
+              <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
+                All-day
+              </Text>
+              <Spacer modifiers={[weight(1)]} />
+              <Switch value={allDay} onCheckedChange={setAllDay} />
+            </Row>
+            <HorizontalDivider color={colors.outlineVariant} />
+            <DateRow colors={colors} label="Starts" date={startsAt} allDay={allDay} onChange={setStartsAt} />
+            <HorizontalDivider color={colors.outlineVariant} />
+            <DateRow colors={colors} label="Ends" date={endsAt} allDay={allDay} onChange={setEndsAt} />
+            <HorizontalDivider color={colors.outlineVariant} />
+            <MenuField
+              colors={colors}
+              label="Travel Time"
+              options={TRAVEL_TIME_OPTIONS}
+              selected={travelTime}
+              onSelect={setTravelTime}
+            />
+          </Group>
 
-        <Group colors={colors}>
-          <MenuField
-            colors={colors}
-            label="Repeat"
-            options={REPEAT_OPTIONS}
-            selected={repeat}
-            onSelect={setRepeat}
-          />
-        </Group>
+          <Group colors={colors}>
+            <MenuField
+              colors={colors}
+              label="Repeat"
+              options={REPEAT_OPTIONS}
+              selected={repeat}
+              onSelect={setRepeat}
+            />
+          </Group>
 
-        <Group colors={colors}>
-          <Row
-            modifiers={[fillMaxWidth(), padding(16, 16, 16, 16)]}
-            verticalAlignment="center"
-            horizontalArrangement={{ spacedBy: 8 }}>
-            <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
-              Calendar
-            </Text>
-            <Spacer modifiers={[weight(1)]} />
-            <Box modifiers={[size(10, 10), clip(Shapes.Circle), background('#0A84FF')]} />
-            <Text style={{ typography: 'bodyLarge' }} color={colors.onSurfaceVariant}>
-              Dom
-            </Text>
-            <Icon source={UNFOLD_ICON} size={14} tint={colors.onSurfaceVariant} />
-          </Row>
-          <HorizontalDivider color={colors.outlineVariant} />
-          <Row
-            modifiers={[fillMaxWidth(), padding(16, 16, 16, 16)]}
-            verticalAlignment="center"
-            horizontalArrangement={{ spacedBy: 8 }}>
-            <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
-              Invitees
-            </Text>
-            <Spacer modifiers={[weight(1)]} />
-            <Text style={{ typography: 'bodyLarge' }} color={colors.onSurfaceVariant}>
-              None
-            </Text>
-            <Icon source={CHEVRON_ICON} size={18} tint={colors.onSurfaceVariant} />
-          </Row>
-        </Group>
+          <Group colors={colors}>
+            <Row
+              modifiers={[fillMaxWidth(), padding(16, 16, 16, 16)]}
+              verticalAlignment="center"
+              horizontalArrangement={{ spacedBy: 8 }}>
+              <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
+                Calendar
+              </Text>
+              <Spacer modifiers={[weight(1)]} />
+              <Box modifiers={[size(10, 10), clip(Shapes.Circle), background('#0A84FF')]} />
+              <Text style={{ typography: 'bodyLarge' }} color={colors.onSurfaceVariant}>
+                Dom
+              </Text>
+              <Icon source={UNFOLD_ICON} size={14} tint={colors.onSurfaceVariant} />
+            </Row>
+            <HorizontalDivider color={colors.outlineVariant} />
+            <Row
+              modifiers={[fillMaxWidth(), padding(16, 16, 16, 16)]}
+              verticalAlignment="center"
+              horizontalArrangement={{ spacedBy: 8 }}>
+              <Text style={{ typography: 'bodyLarge' }} color={colors.onSurface}>
+                Invitees
+              </Text>
+              <Spacer modifiers={[weight(1)]} />
+              <Text style={{ typography: 'bodyLarge' }} color={colors.onSurfaceVariant}>
+                None
+              </Text>
+              <Icon source={CHEVRON_ICON} size={18} tint={colors.onSurfaceVariant} />
+            </Row>
+          </Group>
 
-        <Group colors={colors}>
-          <MenuField
-            colors={colors}
-            label="Alert"
-            options={ALERT_OPTIONS}
-            selected={alert}
-            onSelect={setAlert}
-          />
-        </Group>
+          <Group colors={colors}>
+            <MenuField
+              colors={colors}
+              label="Alert"
+              options={ALERT_OPTIONS}
+              selected={alert}
+              onSelect={setAlert}
+            />
+          </Group>
 
-        <TextButton onClick={noop} modifiers={[fillMaxWidth()]}>
-          <Text color={colors.primary}>Add attachment</Text>
-        </TextButton>
-      </Column>
-    </Host>
+          <TextButton onClick={noop} modifiers={[fillMaxWidth()]}>
+            <Text color={colors.primary}>Add attachment</Text>
+          </TextButton>
+        </Column>
+      </Host>
+    </View>
   );
 }
 

@@ -1,24 +1,14 @@
-import { Button, Host, HStack, Image, Picker, Spacer, Text, VStack } from '@expo/ui/swift-ui';
-import {
-  buttonStyle,
-  disabled,
-  font,
-  frame,
-  glassEffect,
-  padding,
-  pickerStyle,
-  tag,
-} from '@expo/ui/swift-ui/modifiers';
+import { Button, Host, HStack, Image, Spacer, Text } from '@expo/ui/swift-ui';
+import { buttonStyle, disabled, font, frame, glassEffect, padding } from '@expo/ui/swift-ui/modifiers';
 import { router } from 'expo-router';
 import { type SFSymbol } from 'expo-symbols';
-import { useState } from 'react';
 import { PlatformColor } from 'react-native';
 
 const BUTTON_SIZE = 44;
 
-// Header overlays the content, so the screen pads its top by this: top padding +
-// button row + VStack spacing + segmented control + bottom padding.
-export const NEW_EVENT_HEADER_HEIGHT = 16 + BUTTON_SIZE + 10 + 18 + 8;
+// Header overlays the content, so the screen pads its top by this:
+// top padding + button row + bottom padding.
+export const NEW_EVENT_HEADER_HEIGHT = 16 + BUTTON_SIZE + 8;
 
 function getGlassTint(isDisabled: boolean, prominent: boolean) {
   if (isDisabled) {
@@ -67,24 +57,15 @@ function HeaderButton({
 
 // Set as the screen's `header`, replacing the native navigation bar.
 export function NewEventHeader() {
-  const [kind, setKind] = useState<'event' | 'reminder'>('event');
-
   return (
     <Host matchContents={{ vertical: true }}>
-      <VStack spacing={10} modifiers={[padding({ bottom: 8, horizontal: 16, top: 16 })]}>
-        <HStack>
-          <HeaderButton systemName="xmark" onPress={() => router.back()} />
-          <Spacer />
-          <Text modifiers={[font({ size: 17, weight: 'semibold' })]}>New</Text>
-          <Spacer />
-          <HeaderButton systemName="checkmark" prominent isDisabled onPress={() => router.back()} />
-        </HStack>
-
-        <Picker selection={kind} onSelectionChange={setKind} modifiers={[pickerStyle('segmented')]}>
-          <Text modifiers={[tag('event')]}>Event</Text>
-          <Text modifiers={[tag('reminder')]}>Reminder</Text>
-        </Picker>
-      </VStack>
+      <HStack modifiers={[padding({ bottom: 8, horizontal: 16, top: 16 })]}>
+        <HeaderButton systemName="xmark" onPress={() => router.back()} />
+        <Spacer />
+        <Text modifiers={[font({ size: 17, weight: 'semibold' })]}>New</Text>
+        <Spacer />
+        <HeaderButton systemName="checkmark" prominent isDisabled onPress={() => router.back()} />
+      </HStack>
     </Host>
   );
 }

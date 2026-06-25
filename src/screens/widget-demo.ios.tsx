@@ -8,7 +8,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed/themed-text';
 import { ThemedView } from '@/components/themed/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import DeliveryActivity, { type DeliveryProps } from '@/widgets/DeliveryActivity';
 import SdkWidget from '@/widgets/SdkWidget';
 import { SDKS } from '@/widgets/sdk-widget.data';

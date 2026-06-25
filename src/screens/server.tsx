@@ -17,7 +17,7 @@ const Success = '#30A46C';
 export default function ServerScreen() {
   const theme = useTheme();
   const [loggedIn, setLoggedIn] = useState(false);
-  const [busy, setBusy] = useState<'login' | 'logout' | 'fetch' | null>(null);
+  const [busy, setBusy] = useState<'login' | 'fetch' | null>(null);
   const [value, setValue] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,21 +30,6 @@ export default function ServerScreen() {
       setLoggedIn(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed');
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function logout() {
-    setBusy('logout');
-    setError(null);
-    try {
-      const res = await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-      if (!res.ok) throw new Error(`Logout failed (HTTP ${res.status})`);
-      setLoggedIn(false);
-      setValue(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Logout failed');
     } finally {
       setBusy(null);
     }
@@ -68,10 +53,7 @@ export default function ServerScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <SafeAreaView edges={['bottom']} style={styles.safeArea}>
           <ThemedText type="small" themeColor="textSecondary">
             A round-trip through Expo Router&apos;s server: an API route sets an auth cookie, server
@@ -91,22 +73,12 @@ export default function ServerScreen() {
               Calls <Code>POST /api/login</Code>, which responds with{' '}
               <Code>Set-Cookie: token=1234</Code>.
             </ThemedText>
-            {loggedIn ? (
-              <Button
-                title="Logout"
-                variant="secondary"
-                onPress={logout}
-                loading={busy === 'logout'}
-                disabled={busy !== null}
-              />
-            ) : (
-              <Button
-                title="Login"
-                onPress={login}
-                loading={busy === 'login'}
-                disabled={busy !== null}
-              />
-            )}
+            <Button
+              title="Login"
+              onPress={login}
+              loading={busy === 'login'}
+              disabled={busy !== null}
+            />
           </Card>
 
           {/* Protected data */}
