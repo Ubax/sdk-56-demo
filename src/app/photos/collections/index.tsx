@@ -1,11 +1,13 @@
 import { Stack } from "expo-router";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
+
+import { ThemedText } from "@/components/themed/themed-text";
 
 export default function CollectionsScreen() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <Stack.Title large>Collections</Stack.Title>
-      <Text style={styles.text}>Collection</Text>
+      <ThemedText style={styles.text}>Collection</ThemedText>
     </ScrollView>
   );
 }
