@@ -1,5 +1,7 @@
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
+import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { widgetsDirectory } from 'expo-widgets';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -8,8 +10,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed/themed-text';
 import { ThemedView } from '@/components/themed/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import CounterWidget from '@/widgets/CounterWidget';
 import DeliveryActivity, { type DeliveryProps } from '@/widgets/DeliveryActivity';
+import SdkWidget from '@/widgets/SdkWidget';
+import { SDKS } from '@/widgets/sdk-widget.data';
+
+// The widget needs local file URIs, so each SDK cover is the bundled asset
+// resolved to its path in the shared container.
+type SdkEntry = { version: number; releaseDate: string; coverUri: string };
 
 // Fake delivery stages the Live Activity steps through automatically. One stage
 // advances every ADVANCE_MS: Preparing -> +5 min On the way -> +5 min Delivered.
@@ -36,45 +43,89 @@ async function ensureImageInSharedStorage(fileName: string, assetModule: number)
 }
 
 export default function WidgetDemoScreen() {
-  const [count, setCount] = useState(0);
-  const [imageUris, setImageUris] = useState<{ logoUri: string; gridUri: string }>();
+  const [sdks, setSdks] = useState<SdkEntry[]>();
+  // Versions shown in the widget. Seeded from the widget's current timeline on
+  // mount (see effect below), falling back to all.
+  const [selectedVersions, setSelectedVersions] = useState<Set<number>>(
+    () => new Set(SDKS.map((sdk) => sdk.version)),
+  );
+  const [logoUri, setLogoUri] = useState<string>();
   const [deliveryRunning, setDeliveryRunning] = useState(false);
   const activityRef = useRef<ReturnType<typeof DeliveryActivity.start> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // The widget only shows the selected SDKs, navigated by its own prev/next
+  // arrows, so push just those entries (index reset to the start).
+  const pushWidget = (entries: SdkEntry[], versions: Set<number>) => {
+    const visible = entries.filter((entry) => versions.has(entry.version));
+    SdkWidget.updateSnapshot({ sdks: visible, index: 0 });
+  };
+
   useEffect(() => {
+    // Copy the logo (for the Live Activity) and every SDK cover into the shared
+    // widget container, then push the initial widget snapshot.
     Promise.all([
       ensureImageInSharedStorage('logo.png', require('@/assets/images/logo.png')),
-      ensureImageInSharedStorage('background-grid.png', require('@/assets/images/background-grid.png')),
-    ]).then(([logoUri, gridUri]) => {
-      setImageUris({ logoUri, gridUri });
-      // Push an initial snapshot so the widget has content to render.
-      CounterWidget.updateSnapshot({ count: 0, logoUri, gridUri });
-    });
+      ...SDKS.map((sdk) => ensureImageInSharedStorage(sdk.coverFile, sdk.coverModule)),
+    ])
+      .then(async ([logo, ...coverUris]) => {
+        setLogoUri(logo);
+        const entries: SdkEntry[] = SDKS.map((sdk, i) => ({
+          version: sdk.version,
+          releaseDate: sdk.releaseDate,
+          coverUri: coverUris[i],
+        }));
+        setSdks(entries);
+
+        // Adopt the selection the widget is already showing (the SDKs in its
+        // current timeline entry). Only fall back to all — and push that
+        // snapshot — when the widget has nothing yet.
+        const timeline = await SdkWidget.getTimeline().catch(() => []);
+        const shown = (timeline.at(-1)?.props?.sdks ?? [])
+          .map((sdk) => sdk.version)
+          .filter((version) => SDKS.some((sdk) => sdk.version === version));
+
+        if (shown.length > 0) {
+          setSelectedVersions(new Set(shown));
+        } else {
+          const all = new Set(SDKS.map((sdk) => sdk.version));
+          setSelectedVersions(all);
+          pushWidget(entries, all);
+        }
+      })
+      .catch((e) => console.warn('Could not prepare SDK widget images', e));
   }, []);
 
-  const increment = () => {
-    const nextCount = count + 1;
-    setCount(nextCount);
-    // Snapshot props replace the previous ones entirely, so the image URIs must
-    // be included in every update. Skip the widget update until the images are
-    // ready, otherwise this would blank them out.
-    if (imageUris) {
-      CounterWidget.updateSnapshot({ count: nextCount, ...imageUris });
+  const toggleSdk = (version: number) => {
+    const next = new Set(selectedVersions);
+    if (next.has(version)) {
+      // Keep at least one selected so the widget never goes blank.
+      if (next.size === 1) return;
+      next.delete(version);
+    } else {
+      next.add(version);
+    }
+    setSelectedVersions(next);
+    if (sdks) {
+      pushWidget(sdks, next);
     }
   };
 
-  const propsForStage = (stage: number, startEpochMs: number, etaEpochMs: number): DeliveryProps => ({
+  const propsForStage = (
+    stage: number,
+    startEpochMs: number,
+    etaEpochMs: number,
+  ): DeliveryProps => ({
     orderId: '1234',
     status: STAGES[stage],
     stage,
     startEpochMs,
     etaEpochMs,
-    logoUri: imageUris?.logoUri,
+    logoUri,
   });
 
   const startDelivery = () => {
-    if (!imageUris || deliveryRunning) return; // need the shared logo first
+    if (!logoUri || deliveryRunning) return; // need the shared logo first
     try {
       // Fixed start/arrival times for the whole run: the widget counts the ETA
       // down and fills the progress bar across this window on its own.
@@ -123,22 +174,50 @@ export default function WidgetDemoScreen() {
             Widgets
           </ThemedText>
 
-          <View style={styles.countBlock}>
-            <ThemedText type="small" themeColor="textSecondary">
-              Counter
-            </ThemedText>
-            <ThemedText type="title">{count}</ThemedText>
+          <View style={styles.sdkGrid}>
+            {SDKS.map((sdk) => {
+              const selected = selectedVersions.has(sdk.version);
+              return (
+                <Pressable
+                  key={sdk.version}
+                  onPress={() => toggleSdk(sdk.version)}
+                  disabled={!sdks}
+                  style={({ pressed }) => [
+                    styles.sdkTile,
+                    pressed && styles.pressed,
+                    !sdks && styles.disabled,
+                  ]}
+                >
+                  <Image
+                    source={sdk.coverModule}
+                    style={[styles.sdkCover, !selected && styles.sdkCoverDeselected]}
+                    contentFit="cover"
+                  />
+                  {selected && (
+                    <SymbolView
+                      name="checkmark.circle.fill"
+                      size={26}
+                      type="palette"
+                      colors={['#FFFFFF', '#007AFF']}
+                      style={styles.checkmark}
+                    />
+                  )}
+                  <ThemedText type="smallBold" style={styles.sdkLabel}>
+                    SDK {sdk.version}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
-
-          <ActionButton title="Increment and update widget" onPress={increment} />
           <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-            Add the Counter Widget to your home screen, then tap to update it.
+            Add the SDK Widget to your home screen, then tap SDKs here to choose which appear in it.
+            On the medium widget, use the on-widget arrows to switch between the selected SDKs.
           </ThemedText>
 
           <ActionButton
             title={deliveryRunning ? 'Delivery in progress…' : 'Start delivery Live Activity'}
             onPress={startDelivery}
-            disabled={deliveryRunning || !imageUris}
+            disabled={deliveryRunning || !logoUri}
           />
           <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
             Starts a Live Activity that auto-advances through the delivery stages on the Lock Screen
@@ -163,7 +242,8 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [pressed && styles.pressed, disabled && styles.disabled]}>
+      style={({ pressed }) => [pressed && styles.pressed, disabled && styles.disabled]}
+    >
       <ThemedView type="backgroundElement" style={styles.button}>
         <ThemedText type="smallBold">{title}</ThemedText>
       </ThemedView>
@@ -192,10 +272,33 @@ const styles = StyleSheet.create({
   heading: {
     textAlign: 'center',
   },
-  countBlock: {
+  sdkGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    justifyContent: 'center',
+    paddingVertical: Spacing.two,
+  },
+  sdkTile: {
     alignItems: 'center',
     gap: Spacing.one,
-    paddingVertical: Spacing.four,
+    width: 96,
+  },
+  sdkCover: {
+    aspectRatio: 1,
+    borderRadius: Spacing.three,
+    width: '100%',
+  },
+  sdkCoverDeselected: {
+    opacity: 0.4,
+  },
+  checkmark: {
+    position: 'absolute',
+    right: 6,
+    top: 6,
+  },
+  sdkLabel: {
+    textAlign: 'center',
   },
   button: {
     alignItems: 'center',

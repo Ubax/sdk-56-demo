@@ -7,6 +7,10 @@ import { AnimatedSplashOverlay } from '@/components/splash/animated-icon';
 import { useTheme } from '@/hooks/use-theme';
 import { NewEventHeader } from '@/screens/new-event-header';
 
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
@@ -30,6 +34,8 @@ export default function RootLayout() {
         <Stack.Screen name="health" options={{ headerShown: false }} />
         <Stack.Screen name="photos" options={{ headerShown: false }} />
         <Stack.Screen name="widget-demo" options={{ title: '' }} />
+        <Stack.Screen name="server" options={{ title: 'Server Demo' }} />
+        <Stack.Screen name="secret" options={{ title: 'Secret Loader' }} />
         <Stack.Screen
           name="new-event"
           options={{
