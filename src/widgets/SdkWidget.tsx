@@ -10,6 +10,7 @@ import {
   padding,
   resizable,
   tint,
+  widgetURL,
   zIndex,
 } from '@expo/ui/swift-ui/modifiers';
 import { createWidget, type WidgetEnvironment } from 'expo-widgets';
@@ -61,7 +62,13 @@ const SdkWidget = (props: SdkWidgetProps, environment: WidgetEnvironment<SdkConf
 
   return (
     <ZStack
-      modifiers={[containerBackground('#000000', 'widget'), clipShape('containerRelativeShape')]}
+      modifiers={[
+        containerBackground('#000000', 'widget'),
+        clipShape('containerRelativeShape'),
+        // Absolute path (triple slash) so it opens the /widget-demo route;
+        // `sdk56demo://widget-demo` would parse `widget-demo` as the host.
+        widgetURL('sdk56demo:///widget-demo'),
+      ]}
     >
       {/* Full-bleed cover image. */}
       {isFullColor && current.coverUri && (

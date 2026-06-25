@@ -1,5 +1,7 @@
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
+import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { widgetsDirectory } from 'expo-widgets';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -42,11 +44,22 @@ async function ensureImageInSharedStorage(fileName: string, assetModule: number)
 
 export default function WidgetDemoScreen() {
   const [sdks, setSdks] = useState<SdkEntry[]>();
-  const [selectedIndex, setSelectedIndex] = useState(SDKS.length - 1); // default to the newest SDK
+  // Versions shown in the widget. Seeded from the widget's current timeline on
+  // mount (see effect below), falling back to all.
+  const [selectedVersions, setSelectedVersions] = useState<Set<number>>(
+    () => new Set(SDKS.map((sdk) => sdk.version)),
+  );
   const [logoUri, setLogoUri] = useState<string>();
   const [deliveryRunning, setDeliveryRunning] = useState(false);
   const activityRef = useRef<ReturnType<typeof DeliveryActivity.start> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // The widget only shows the selected SDKs, navigated by its own prev/next
+  // arrows, so push just those entries (index reset to the start).
+  const pushWidget = (entries: SdkEntry[], versions: Set<number>) => {
+    const visible = entries.filter((entry) => versions.has(entry.version));
+    SdkWidget.updateSnapshot({ sdks: visible, index: 0 });
+  };
 
   useEffect(() => {
     // Copy the logo (for the Live Activity) and every SDK cover into the shared
@@ -54,26 +67,55 @@ export default function WidgetDemoScreen() {
     Promise.all([
       ensureImageInSharedStorage('logo.png', require('@/assets/images/logo.png')),
       ...SDKS.map((sdk) => ensureImageInSharedStorage(sdk.coverFile, sdk.coverModule)),
-    ]).then(([logo, ...coverUris]) => {
-      setLogoUri(logo);
-      const entries: SdkEntry[] = SDKS.map((sdk, i) => ({
-        version: sdk.version,
-        releaseDate: sdk.releaseDate,
-        coverUri: coverUris[i],
-      }));
-      setSdks(entries);
-      SdkWidget.updateSnapshot({ sdks: entries, index: SDKS.length - 1 });
-    }).catch((e) => console.warn('Could not prepare SDK widget images', e));
+    ])
+      .then(async ([logo, ...coverUris]) => {
+        setLogoUri(logo);
+        const entries: SdkEntry[] = SDKS.map((sdk, i) => ({
+          version: sdk.version,
+          releaseDate: sdk.releaseDate,
+          coverUri: coverUris[i],
+        }));
+        setSdks(entries);
+
+        // Adopt the selection the widget is already showing (the SDKs in its
+        // current timeline entry). Only fall back to all — and push that
+        // snapshot — when the widget has nothing yet.
+        const timeline = await SdkWidget.getTimeline().catch(() => []);
+        const shown = (timeline.at(-1)?.props?.sdks ?? [])
+          .map((sdk) => sdk.version)
+          .filter((version) => SDKS.some((sdk) => sdk.version === version));
+
+        if (shown.length > 0) {
+          setSelectedVersions(new Set(shown));
+        } else {
+          const all = new Set(SDKS.map((sdk) => sdk.version));
+          setSelectedVersions(all);
+          pushWidget(entries, all);
+        }
+      })
+      .catch((e) => console.warn('Could not prepare SDK widget images', e));
   }, []);
 
-  const selectSdk = (index: number) => {
-    setSelectedIndex(index);
+  const toggleSdk = (version: number) => {
+    const next = new Set(selectedVersions);
+    if (next.has(version)) {
+      // Keep at least one selected so the widget never goes blank.
+      if (next.size === 1) return;
+      next.delete(version);
+    } else {
+      next.add(version);
+    }
+    setSelectedVersions(next);
     if (sdks) {
-      SdkWidget.updateSnapshot({ sdks, index });
+      pushWidget(sdks, next);
     }
   };
 
-  const propsForStage = (stage: number, startEpochMs: number, etaEpochMs: number): DeliveryProps => ({
+  const propsForStage = (
+    stage: number,
+    startEpochMs: number,
+    etaEpochMs: number,
+  ): DeliveryProps => ({
     orderId: '1234',
     status: STAGES[stage],
     stage,
@@ -132,25 +174,44 @@ export default function WidgetDemoScreen() {
             Widgets
           </ThemedText>
 
-          <View style={styles.sdkRow}>
-            {SDKS.map((sdk, index) => (
-              <Pressable
-                key={sdk.version}
-                onPress={() => selectSdk(index)}
-                disabled={!sdks}
-                style={({ pressed }) => [styles.sdkChip, pressed && styles.pressed, !sdks && styles.disabled]}>
-                <ThemedView
-                  type="backgroundElement"
-                  style={[styles.sdkChipInner, index === selectedIndex && styles.sdkChipActive]}>
-                  <ThemedText type="smallBold">SDK {sdk.version}</ThemedText>
-                </ThemedView>
-              </Pressable>
-            ))}
+          <View style={styles.sdkGrid}>
+            {SDKS.map((sdk) => {
+              const selected = selectedVersions.has(sdk.version);
+              return (
+                <Pressable
+                  key={sdk.version}
+                  onPress={() => toggleSdk(sdk.version)}
+                  disabled={!sdks}
+                  style={({ pressed }) => [
+                    styles.sdkTile,
+                    pressed && styles.pressed,
+                    !sdks && styles.disabled,
+                  ]}
+                >
+                  <Image
+                    source={sdk.coverModule}
+                    style={[styles.sdkCover, !selected && styles.sdkCoverDeselected]}
+                    contentFit="cover"
+                  />
+                  {selected && (
+                    <SymbolView
+                      name="checkmark.circle.fill"
+                      size={26}
+                      type="palette"
+                      colors={['#FFFFFF', '#007AFF']}
+                      style={styles.checkmark}
+                    />
+                  )}
+                  <ThemedText type="smallBold" style={styles.sdkLabel}>
+                    SDK {sdk.version}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
           <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-            Add the SDK Widget to your home screen, then pick an SDK here to update it. On the
-            medium widget, use the on-widget arrows to switch SDKs, or long-press → Edit Widget to
-            choose the main text.
+            Add the SDK Widget to your home screen, then tap SDKs here to choose which appear in it.
+            On the medium widget, use the on-widget arrows to switch between the selected SDKs.
           </ThemedText>
 
           <ActionButton
@@ -181,7 +242,8 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [pressed && styles.pressed, disabled && styles.disabled]}>
+      style={({ pressed }) => [pressed && styles.pressed, disabled && styles.disabled]}
+    >
       <ThemedView type="backgroundElement" style={styles.button}>
         <ThemedText type="smallBold">{title}</ThemedText>
       </ThemedView>
@@ -210,25 +272,33 @@ const styles = StyleSheet.create({
   heading: {
     textAlign: 'center',
   },
-  sdkRow: {
+  sdkGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.two,
     justifyContent: 'center',
     paddingVertical: Spacing.two,
   },
-  sdkChip: {
-    minWidth: 84,
-  },
-  sdkChipInner: {
+  sdkTile: {
     alignItems: 'center',
-    borderColor: 'transparent',
-    borderRadius: Spacing.three,
-    borderWidth: 2,
-    paddingVertical: Spacing.three,
+    gap: Spacing.one,
+    width: 96,
   },
-  sdkChipActive: {
-    borderColor: '#366DF2',
+  sdkCover: {
+    aspectRatio: 1,
+    borderRadius: Spacing.three,
+    width: '100%',
+  },
+  sdkCoverDeselected: {
+    opacity: 0.4,
+  },
+  checkmark: {
+    position: 'absolute',
+    right: 6,
+    top: 6,
+  },
+  sdkLabel: {
+    textAlign: 'center',
   },
   button: {
     alignItems: 'center',

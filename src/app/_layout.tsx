@@ -7,6 +7,10 @@ import { AnimatedSplashOverlay } from '@/components/splash/animated-icon';
 import { useTheme } from '@/hooks/use-theme';
 import { NewEventHeader } from '@/screens/new-event-header';
 
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
