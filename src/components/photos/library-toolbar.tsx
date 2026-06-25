@@ -54,6 +54,15 @@ export function LibraryToolbar({
           <Stack.Toolbar.MenuAction icon={icons.selectAll} onPress={onSelectAll}>
             Select All
           </Stack.Toolbar.MenuAction>
+          {isAndroid && (
+            <Stack.Toolbar.MenuAction
+              icon={icons.share}
+              disabled={selectedCount === 0}
+              onPress={onShare}
+            >
+              Share
+            </Stack.Toolbar.MenuAction>
+          )}
         </Stack.Toolbar.Menu>
         <Stack.Toolbar.Button
           icon={icons.select}
