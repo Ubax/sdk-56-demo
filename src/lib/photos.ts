@@ -3,6 +3,8 @@
 // can be exercised across shapes — but the display sizes are measured from the
 // loaded image (`onLoad`), never read back from here.
 
+import { useMemo } from "react";
+
 export type Photo = { id: number; uri: string };
 
 // Varied request sizes, cycled across the photos (only used to build the URLs).
@@ -20,8 +22,10 @@ export const PHOTOS: Photo[] = Array.from({ length: 30 }, (_, i) => {
   return { id: i + 1, uri: `https://picsum.photos/seed/${i + 1}/${width}/${height}` };
 });
 
-export function getPhoto(id: string | number): Photo {
-  return PHOTOS[Number(id) - 1] ?? PHOTOS[0];
+// Look up a photo by its route id. A hook (not a plain getter) so the lookup can
+// later be backed by a store or query without touching call sites.
+export function usePhoto(id: string | number): Photo {
+  return useMemo(() => PHOTOS[Number(id) - 1] ?? PHOTOS[0], [id]);
 }
 
 // Square thumbnail crop of the same underlying image (same seed) for the grid.

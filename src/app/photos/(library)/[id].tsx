@@ -1,14 +1,16 @@
 import { Image } from "expo-image";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { PlatformColor, StyleSheet, View } from "react-native";
 
-import { useHideTabBar } from "@/components/tab-bar-visibility";
-import { getPhoto } from "@/lib/photos";
+import { useHideTabBar } from "@/components/photos/tab-bar-visibility";
+import { usePhoto } from "@/lib/photos";
 import { toolbarSpacerWidth, useToolbarIcons } from "@/lib/use-toolbar-icons";
+
+const isIOS = process.env.EXPO_OS === "ios";
 
 export default function PhotoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const photo = getPhoto(id);
+  const photo = usePhoto(id);
   const icons = useToolbarIcons();
 
   // Hide the native tab bar (iOS only — see app-tabs) while viewing the photo
@@ -17,7 +19,19 @@ export default function PhotoScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: "2 Sep 2025" }} />
+      {/* iOS: transparent header floating over the photo. Android uses the
+          default opaque app bar (PlatformColor('label') is iOS-only). */}
+      {isIOS && (
+        <Stack.Header
+          transparent
+          blurEffect="none"
+          style={{ backgroundColor: "transparent", shadowColor: "transparent" }}
+        />
+      )}
+      <Stack.Title style={isIOS ? { color: PlatformColor("label") } : undefined}>
+        2 Sep 2025
+      </Stack.Title>
+      <Stack.Screen.BackButton displayMode="minimal" />
 
       {process.env.EXPO_OS !== "web" && (
         <>

@@ -1,7 +1,7 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useColorScheme } from "react-native";
 
-import { useTabBarHidden } from "@/components/tab-bar-visibility";
+import { useTabBarHidden } from "@/components/photos/tab-bar-visibility";
 import { Colors } from "@/constants/theme";
 
 export default function AppTabs() {

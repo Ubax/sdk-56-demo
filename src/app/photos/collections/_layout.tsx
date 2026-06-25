@@ -1,9 +1,6 @@
-import { Stack } from 'expo-router/stack';
+import { Stack } from "expo-router/stack";
 
+// Title is set in the screen via Stack.Title.
 export default function CollectionsLayout() {
-  return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: 'Collections', headerLargeTitle: true }} />
-    </Stack>
-  );
+  return <Stack />;
 }
