@@ -2,6 +2,7 @@ import { Spacing } from "@/constants/theme";
 import type { SFSymbol } from "expo-symbols";
 import type { ImageSourcePropType } from "react-native";
 
+import accountCircle from "@expo/material-symbols/account_circle.xml";
 import checkCircle from "@expo/material-symbols/check_circle.xml";
 import checklist from "@expo/material-symbols/checklist.xml";
 import closeIcon from "@expo/material-symbols/close.xml";
@@ -34,6 +35,7 @@ const SYMBOLS = {
   adjust: { ios: "slider.horizontal.3", android: tune },
   allPhotos: { ios: "photo", android: photo },
   videos: { ios: "video", android: videocam },
+  person: { ios: "person.crop.circle", android: accountCircle },
 } satisfies Record<string, { ios?: SFSymbol; android: ImageSourcePropType }>;
 
 type ToolbarIcons = Record<keyof typeof SYMBOLS, ToolbarIcon>;
