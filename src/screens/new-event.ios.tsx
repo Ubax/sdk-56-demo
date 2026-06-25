@@ -22,13 +22,15 @@ import {
   pickerStyle,
   tag,
 } from '@expo/ui/swift-ui/modifiers';
+import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import { useState } from 'react';
-import { PlatformColor } from 'react-native';
+import { PlatformColor, View } from 'react-native';
 
 import { LinkRow } from '@/components/list/link-row';
 import { NEW_EVENT_HEADER_HEIGHT } from '@/screens/new-event-header';
 import {
   ALERT_OPTIONS,
+  KIND_OPTIONS,
   ONE_HOUR_IN_MS,
   REPEAT_OPTIONS,
   TRAVEL_TIME_OPTIONS,
@@ -51,6 +53,7 @@ function MenuChevron() {
 }
 
 export default function NewEventScreen() {
+  const [kind, setKind] = useState(0);
   const [allDay, setAllDay] = useState(false);
   const now = new Date();
   const [startsAt, setStartsAt] = useState(now);
@@ -62,91 +65,99 @@ export default function NewEventScreen() {
   const dateComponents = allDay ? (['date'] as const) : (['date', 'hourAndMinute'] as const);
 
   return (
-    <Host style={{ backgroundColor: 'transparent', flex: 1 }}>
-      <List modifiers={[listStyle('insetGrouped'), padding({ top: NEW_EVENT_HEADER_HEIGHT })]}>
-        <Section modifiers={SECTION_MODS}>
-          <TextField placeholder="Title" />
-          <TextField placeholder="Location or Video Call" />
-        </Section>
+    <View style={{ flex: 1 }}>
+      <SegmentedControl
+        values={KIND_OPTIONS}
+        selectedIndex={kind}
+        onChange={(event) => setKind(event.nativeEvent.selectedSegmentIndex)}
+        style={{ marginHorizontal: 16, marginTop: NEW_EVENT_HEADER_HEIGHT }}
+      />
+      <Host style={{ backgroundColor: 'transparent', flex: 1 }}>
+        <List modifiers={[listStyle('insetGrouped'), padding({ top: 8 })]}>
+          <Section modifiers={SECTION_MODS}>
+            <TextField placeholder="Title" />
+            <TextField placeholder="Location or Video Call" />
+          </Section>
 
-        <Section modifiers={SECTION_MODS}>
-          <Toggle isOn={allDay} onIsOnChange={setAllDay} label="All-day" />
-          <DatePicker
-            title="Starts"
-            displayedComponents={[...dateComponents]}
-            selection={startsAt}
-            onDateChange={setStartsAt}
-            modifiers={[datePickerStyle('compact')]}
-          />
-          <DatePicker
-            title="Ends"
-            displayedComponents={[...dateComponents]}
-            selection={endsAt}
-            onDateChange={setEndsAt}
-            modifiers={[datePickerStyle('compact')]}
-          />
-          <Picker
-            label="Travel Time"
-            selection={travelTime}
-            onSelectionChange={setTravelTime}
-            modifiers={[pickerStyle('menu'), menuTint]}>
-            {TRAVEL_TIME_OPTIONS.map((option) => (
-              <Text key={option} modifiers={[tag(option)]}>
-                {option}
-              </Text>
-            ))}
-          </Picker>
-        </Section>
+          <Section modifiers={SECTION_MODS}>
+            <Toggle isOn={allDay} onIsOnChange={setAllDay} label="All-day" />
+            <DatePicker
+              title="Starts"
+              displayedComponents={[...dateComponents]}
+              selection={startsAt}
+              onDateChange={setStartsAt}
+              modifiers={[datePickerStyle('compact')]}
+            />
+            <DatePicker
+              title="Ends"
+              displayedComponents={[...dateComponents]}
+              selection={endsAt}
+              onDateChange={setEndsAt}
+              modifiers={[datePickerStyle('compact')]}
+            />
+            <Picker
+              label="Travel Time"
+              selection={travelTime}
+              onSelectionChange={setTravelTime}
+              modifiers={[pickerStyle('menu'), menuTint]}>
+              {TRAVEL_TIME_OPTIONS.map((option) => (
+                <Text key={option} modifiers={[tag(option)]}>
+                  {option}
+                </Text>
+              ))}
+            </Picker>
+          </Section>
 
-        <Section modifiers={SECTION_MODS}>
-          <Picker
-            label="Repeat"
-            selection={repeat}
-            onSelectionChange={setRepeat}
-            modifiers={[pickerStyle('menu'), menuTint]}>
-            {REPEAT_OPTIONS.map((option) => (
-              <Text key={option} modifiers={[tag(option)]}>
-                {option}
-              </Text>
-            ))}
-          </Picker>
-        </Section>
+          <Section modifiers={SECTION_MODS}>
+            <Picker
+              label="Repeat"
+              selection={repeat}
+              onSelectionChange={setRepeat}
+              modifiers={[pickerStyle('menu'), menuTint]}>
+              {REPEAT_OPTIONS.map((option) => (
+                <Text key={option} modifiers={[tag(option)]}>
+                  {option}
+                </Text>
+              ))}
+            </Picker>
+          </Section>
 
-        <Section modifiers={SECTION_MODS}>
-          <Button modifiers={[buttonStyle('plain')]} onPress={noop}>
-            <HStack spacing={8}>
-              <Text>Calendar</Text>
-              <Spacer />
-              <Image systemName="circle.fill" size={10} color={PlatformColor('systemBlue')} />
-              <Text modifiers={[secondaryText]}>Dom</Text>
-              <MenuChevron />
-            </HStack>
-          </Button>
-          <LinkRow title="Invitees" value="None" onPress={noop} />
-        </Section>
+          <Section modifiers={SECTION_MODS}>
+            <Button modifiers={[buttonStyle('plain')]} onPress={noop}>
+              <HStack spacing={8}>
+                <Text>Calendar</Text>
+                <Spacer />
+                <Image systemName="circle.fill" size={10} color={PlatformColor('systemBlue')} />
+                <Text modifiers={[secondaryText]}>Dom</Text>
+                <MenuChevron />
+              </HStack>
+            </Button>
+            <LinkRow title="Invitees" value="None" onPress={noop} />
+          </Section>
 
-        <Section modifiers={SECTION_MODS}>
-          <Picker
-            label="Alert"
-            selection={alert}
-            onSelectionChange={setAlert}
-            modifiers={[pickerStyle('menu'), menuTint]}>
-            {ALERT_OPTIONS.map((option) => (
-              <Text key={option} modifiers={[tag(option)]}>
-                {option}
-              </Text>
-            ))}
-          </Picker>
-        </Section>
+          <Section modifiers={SECTION_MODS}>
+            <Picker
+              label="Alert"
+              selection={alert}
+              onSelectionChange={setAlert}
+              modifiers={[pickerStyle('menu'), menuTint]}>
+              {ALERT_OPTIONS.map((option) => (
+                <Text key={option} modifiers={[tag(option)]}>
+                  {option}
+                </Text>
+              ))}
+            </Picker>
+          </Section>
 
-        <Section modifiers={SECTION_MODS}>
-          <Button
-            label="Add attachment"
-            onPress={noop}
-            modifiers={[buttonStyle('plain'), secondaryText]}
-          />
-        </Section>
-      </List>
-    </Host>
+          <Section modifiers={SECTION_MODS}>
+            <Button
+              label="Add attachment"
+              onPress={noop}
+              modifiers={[buttonStyle('plain'), secondaryText]}
+            />
+          </Section>
+        </List>
+      </Host>
+    </View>
   );
 }
