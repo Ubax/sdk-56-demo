@@ -11,6 +11,9 @@ export function PhotoGrid({ selecting, selected, onToggle, onLongPress }: PhotoG
       data={PHOTOS}
       keyExtractor={(photo) => String(photo.id)}
       numColumns={3}
+      // iOS-only; insets the first row below the transparent large-title header.
+      // Android/web ignore it.
+      contentInsetAdjustmentBehavior="automatic"
       renderItem={({ item: photo }) => (
         <PhotoCell
           photo={photo}

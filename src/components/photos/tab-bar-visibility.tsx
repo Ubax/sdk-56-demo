@@ -23,10 +23,10 @@ type PlatformFlags = { ios?: boolean; android?: boolean; web?: boolean };
 
 /**
  * Access tab-bar visibility: the tab bar reads `hidden`; screens call `setHidden`
- * to toggle it. `platforms` gates `hidden` to the listed platforms (default: all),
+ * to toggle it. `platforms` gates `hidden` to the listed platforms (default: none),
  * so e.g. only iOS hides the bar while Android keeps it visible.
  */
-export function useTabBarHidden(platforms: PlatformFlags = { ios: true, android: true, web: true }) {
+export function useTabBarHidden(platforms: PlatformFlags = {}) {
   const { hidden, setHidden } = use(TabBarVisibilityContext);
   const os = process.env.EXPO_OS as keyof PlatformFlags;
   return { hidden: (platforms[os] ?? false) && hidden, setHidden };

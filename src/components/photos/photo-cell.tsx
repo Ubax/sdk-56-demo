@@ -1,13 +1,7 @@
 import { Image } from "expo-image";
 import { SymbolView } from "expo-symbols";
 import { Link } from "expo-router";
-import { useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { thumbUri, type Photo } from "@/lib/photos";
 
@@ -26,14 +20,6 @@ export function PhotoCell({
   onToggle,
   onLongPress,
 }: Props) {
-  const { width: screenWidth } = useWindowDimensions();
-  const [aspect, setAspect] = useState<number | null>(null);
-
-  const preview = {
-    width: screenWidth,
-    height: aspect ? screenWidth / aspect : screenWidth,
-  };
-
   return (
     <Link
       href={`/photos/${photo.id}`}
@@ -56,37 +42,10 @@ export function PhotoCell({
             contentFit="cover"
             transition={150}
           />
-          {selected &&
-            // iOS draws the two-tone SF Symbol directly. On Android SymbolView
-            // renders a single-color glyph, so wrap a white check in a blue
-            // circle to get the same white-on-blue badge.
-            (process.env.EXPO_OS === "android" ? (
-              <View style={[styles.checkmark, styles.androidBadge]}>
-                <SymbolView
-                  name={{ android: "check" }}
-                  size={18}
-                  tintColor="#FFFFFF"
-                />
-              </View>
-            ) : (
-              <SymbolView
-                name="checkmark.circle.fill"
-                size={26}
-                type="palette"
-                colors={["#FFFFFF", "#007AFF"]}
-                style={styles.checkmark}
-              />
-            ))}
+          {selected && <SelectionCheckmark />}
         </Pressable>
       </Link.Trigger>
-      <Link.Preview style={preview}>
-        <Image
-          style={preview}
-          source={photo.uri}
-          contentFit="cover"
-          onLoad={(e) => setAspect(e.source.width / e.source.height)}
-        />
-      </Link.Preview>
+      <Link.Preview />
       <Link.Menu>
         <Link.Menu inline palette>
           <Link.MenuAction icon="square.and.arrow.up" onPress={() => {}}>
@@ -113,6 +72,27 @@ export function PhotoCell({
         </Link.MenuAction>
       </Link.Menu>
     </Link>
+  );
+}
+
+// iOS draws the two-tone SF Symbol directly. On Android SymbolView renders a
+// single-color glyph, so wrap a white check in a blue circle for the same badge.
+function SelectionCheckmark() {
+  if (process.env.EXPO_OS === "android") {
+    return (
+      <View style={[styles.checkmark, styles.androidBadge]}>
+        <SymbolView name={{ android: "check" }} size={18} tintColor="#FFFFFF" />
+      </View>
+    );
+  }
+  return (
+    <SymbolView
+      name="checkmark.circle.fill"
+      size={26}
+      type="palette"
+      colors={["#FFFFFF", "#007AFF"]}
+      style={styles.checkmark}
+    />
   );
 }
 
