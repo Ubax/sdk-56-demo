@@ -1,5 +1,8 @@
 import { Stack } from "expo-router";
 
-export default function Layout() {
-  return <Stack />;
+import { useTheme } from "@/hooks/use-theme";
+
+export default function SearchLayout() {
+  const theme = useTheme();
+  return <Stack screenOptions={{ contentStyle: { backgroundColor: theme.background } }} />;
 }

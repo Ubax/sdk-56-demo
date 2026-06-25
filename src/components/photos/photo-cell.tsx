@@ -1,8 +1,10 @@
 import { Image } from "expo-image";
+import * as Haptics from "expo-haptics";
 import { SymbolView } from "expo-symbols";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { useTheme } from "@/hooks/use-theme";
 import { thumbUri, type Photo } from "@/lib/photos";
 
 type Props = {
@@ -20,6 +22,17 @@ export function PhotoCell({
   onToggle,
   onLongPress,
 }: Props) {
+  const theme = useTheme();
+
+  // Fire a haptic before the long-press action (Android only — iOS long-press
+  // opens the native peek, which has its own haptic).
+  const handleLongPress = onLongPress
+    ? () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onLongPress(photo.id);
+      }
+    : undefined;
+
   return (
     <Link
       href={`/photos/${photo.id}`}
@@ -32,12 +45,9 @@ export function PhotoCell({
       }}
     >
       <Link.Trigger withAppleZoom>
-        <Pressable
-          style={styles.cell}
-          onLongPress={onLongPress ? () => onLongPress(photo.id) : undefined}
-        >
+        <Pressable style={styles.cell} onLongPress={handleLongPress}>
           <Image
-            style={styles.image}
+            style={[styles.image, { backgroundColor: theme.backgroundElement }]}
             source={thumbUri(photo.id)}
             contentFit="cover"
             transition={150}
@@ -104,7 +114,6 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
-    backgroundColor: "#e0e0e0",
   },
   checkmark: {
     position: "absolute",

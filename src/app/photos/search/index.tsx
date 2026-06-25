@@ -1,11 +1,13 @@
 import { Stack } from "expo-router";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
+
+import { ThemedText } from "@/components/themed/themed-text";
 
 export default function SearchScreen() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
       <Stack.Title large>Search</Stack.Title>
-      <Text style={styles.text}>Search</Text>
+      <ThemedText style={styles.text}>Search</ThemedText>
     </ScrollView>
   );
 }
