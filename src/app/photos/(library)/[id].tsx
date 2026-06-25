@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { PlatformColor, StyleSheet, View } from "react-native";
 
+import { IOSTransparentHeader } from "@/components/photos/ios-transparent-header";
 import { useHideTabBar } from "@/components/photos/tab-bar-visibility";
 import { usePhoto } from "@/lib/photos";
 import { toolbarSpacerWidth, useToolbarIcons } from "@/lib/use-toolbar-icons";
@@ -13,21 +14,11 @@ export default function PhotoScreen() {
   const photo = usePhoto(id);
   const icons = useToolbarIcons();
 
-  // Hide the native tab bar (iOS only — see app-tabs) while viewing the photo
-  // so the bottom toolbar owns the bottom edge.
   useHideTabBar();
 
   return (
     <View style={styles.container}>
-      {/* iOS: transparent header floating over the photo. Android uses the
-          default opaque app bar (PlatformColor('label') is iOS-only). */}
-      {isIOS && (
-        <Stack.Header
-          transparent
-          blurEffect="none"
-          style={{ backgroundColor: "transparent", shadowColor: "transparent" }}
-        />
-      )}
+      <IOSTransparentHeader />
       <Stack.Title style={isIOS ? { color: PlatformColor("label") } : undefined}>
         2 Sep 2025
       </Stack.Title>
@@ -37,7 +28,6 @@ export default function PhotoScreen() {
         <>
           <Stack.Toolbar placement="right">
             <Stack.Toolbar.Menu icon={icons.more} title="More">
-              {/* SF Symbol icons show on iOS; Android menu rows are text-only. */}
               <Stack.Toolbar.MenuAction
                 icon="square.and.arrow.up"
                 onPress={() => {}}
@@ -58,7 +48,6 @@ export default function PhotoScreen() {
               Share
             </Stack.Toolbar.Button>
             <Stack.Toolbar.Spacer width={toolbarSpacerWidth} />
-            {/* Favorite / Info / Adjust have no spacer between them, so they share one glass background. */}
             <Stack.Toolbar.Button icon={icons.heart} onPress={() => {}}>
               Favorite
             </Stack.Toolbar.Button>

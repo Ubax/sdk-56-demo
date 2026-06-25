@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 
+import { IOSTransparentHeader } from "@/components/photos/ios-transparent-header";
 import { LibraryToolbar } from "@/components/photos/library-toolbar";
 import { PhotoGrid } from "@/components/photos/photo-grid";
 import { useTabBarHidden } from "@/components/photos/tab-bar-visibility";
@@ -56,18 +57,7 @@ export default function LibraryScreen() {
 
   return (
     <>
-      {/* iOS: transparent large-title header the grid scrolls under. Android
-          uses the navigation theme's default opaque app bar. */}
-      {process.env.EXPO_OS === "ios" && (
-        <Stack.Header
-          transparent
-          blurEffect="none"
-          style={{ backgroundColor: "transparent", shadowColor: "transparent" }}
-          largeStyle={{ backgroundColor: "transparent", shadowColor: "transparent" }}
-        />
-      )}
-      {/* The visible "Library" heading is the left toolbar item, so the native
-          title stays empty. */}
+      <IOSTransparentHeader />
       <Stack.Title>{""}</Stack.Title>
 
       <LibraryToolbar

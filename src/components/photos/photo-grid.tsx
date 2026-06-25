@@ -5,8 +5,6 @@ import { PHOTOS } from "@/lib/photos";
 
 import type { PhotoGridProps } from "./photo-grid.types";
 
-// Base grid (Android / web). The iOS variant (`.ios.tsx`) adds the content inset
-// so the grid scrolls under the transparent large-title header.
 export function PhotoGrid({ selecting, selected, onToggle, onLongPress }: PhotoGridProps) {
   return (
     <FlatList

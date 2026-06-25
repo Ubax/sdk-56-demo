@@ -5,9 +5,6 @@ import { PHOTOS } from "@/lib/photos";
 
 import type { PhotoGridProps } from "./photo-grid.types";
 
-// iOS grid: `contentInsetAdjustmentBehavior="automatic"` insets the content below
-// the transparent large-title header so the first row isn't clipped while the
-// rest of the grid still scrolls underneath it.
 export function PhotoGrid({ selecting, selected, onToggle, onLongPress }: PhotoGridProps) {
   return (
     <FlatList

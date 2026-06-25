@@ -7,15 +7,11 @@ import { Colors } from "@/constants/theme";
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "dark" ? "dark" : "light"];
-  const { hidden } = useTabBarHidden();
-
-  // Only iOS hides the tab bar (the bottom toolbar takes over the edge there).
-  // Android keeps it visible since it has no such overlapping toolbar.
-  const tabBarHidden = process.env.EXPO_OS === "ios" ? hidden : false;
+  const { hidden } = useTabBarHidden({ ios: true });
 
   return (
     <NativeTabs
-      hidden={tabBarHidden}
+      hidden={hidden}
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}

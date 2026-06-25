@@ -1,6 +1,5 @@
-import { Stack } from "expo-router/stack";
+import { Stack } from "expo-router";
 
-// Title is set in the screen via Stack.Title.
-export default function SearchLayout() {
+export default function Layout() {
   return <Stack />;
 }

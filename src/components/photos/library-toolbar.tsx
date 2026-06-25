@@ -4,33 +4,18 @@ import { DynamicColorIOS, StyleSheet, Text, useColorScheme, View } from "react-n
 import { Colors } from "@/constants/theme";
 import { toolbarSpacerWidth, useToolbarIcons } from "@/lib/use-toolbar-icons";
 
-export type LibraryToolbarProps = {
-  selecting: boolean;
-  selectedCount: number;
-  // Open select mode (iOS "Select" button; Android enters it by long-press).
-  onStartSelect: () => void;
-  // Leave select mode and clear the selection (header X).
-  onExitSelect: () => void;
-  // Select every photo ("Select All" in the overflow menu).
-  onSelectAll: () => void;
-};
+import type { LibraryToolbarProps } from "./library-toolbar.types";
 
 const isAndroid = process.env.EXPO_OS === "android";
 
-// White over dark content, black over light. On iOS 26 DynamicColorIOS adapts
-// to the content behind the transparent header. Android has no such transparent
-// overlay, so read the theme color directly.
 function useLabelColor() {
   const scheme = useColorScheme();
   if (process.env.EXPO_OS === "ios") {
-    return DynamicColorIOS({ light: "#000000", dark: "#FFFFFF" });
+    return DynamicColorIOS({ light: Colors.light.text, dark: Colors.dark.text });
   }
   return Colors[scheme === "dark" ? "dark" : "light"].text;
 }
 
-// The native Library header + (iOS) select-mode bottom toolbar. Rendered as a
-// sibling of the grid; `Stack.Toolbar` registers via context, not by position.
-// Web has no native toolbar — see `library-toolbar.web.tsx`.
 export function LibraryToolbar({
   selecting,
   selectedCount,
@@ -54,20 +39,18 @@ export function LibraryToolbar({
 
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Menu icon={icons.filter} title="Filter">
-          {/* SF Symbol icons here show on iOS; Android renders the dropdown
-              rows as text-only (its native menu ignores SF Symbols). */}
-          <Stack.Toolbar.MenuAction icon="photo" onPress={() => {}}>
+          <Stack.Toolbar.MenuAction icon={icons.allPhotos} onPress={() => {}}>
             All Photos
           </Stack.Toolbar.MenuAction>
-          <Stack.Toolbar.MenuAction icon="heart" onPress={() => {}}>
+          <Stack.Toolbar.MenuAction icon={icons.heart} onPress={() => {}}>
             Favorites
           </Stack.Toolbar.MenuAction>
-          <Stack.Toolbar.MenuAction icon="video" onPress={() => {}}>
+          <Stack.Toolbar.MenuAction icon={icons.videos} onPress={() => {}}>
             Videos
           </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
         <Stack.Toolbar.Menu icon={icons.more} title="More" hidden={!selecting}>
-          <Stack.Toolbar.MenuAction icon="checkmark.circle" onPress={onSelectAll}>
+          <Stack.Toolbar.MenuAction icon={icons.selectAll} onPress={onSelectAll}>
             Select All
           </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
@@ -86,9 +69,6 @@ export function LibraryToolbar({
         />
       </Stack.Toolbar>
 
-      {/* Bottom toolbar is iOS-only. On Android the native bottom toolbar is a
-          full-screen Compose overlay that swallows taps on the grid, so select
-          actions there live in the header (X to exit) instead. */}
       {process.env.EXPO_OS === "ios" && selecting && (
         <Stack.Toolbar placement="bottom">
           <Stack.Toolbar.Button

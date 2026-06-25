@@ -16,8 +16,6 @@ type Props = {
   selecting: boolean;
   selected: boolean;
   onToggle: (id: number) => void;
-  // Android only: long-press enters select mode (iOS uses the toolbar button and
-  // reserves long-press for the peek/context menu).
   onLongPress?: (id: number) => void;
 };
 
@@ -28,9 +26,6 @@ export function PhotoCell({
   onToggle,
   onLongPress,
 }: Props) {
-  // Preview size is derived from the loaded image's real dimensions, so it
-  // shows just the image (no letterboxing) without any hardcoded aspect. iOS
-  // scales the preview down to fit the screen, so we don't cap the height.
   const { width: screenWidth } = useWindowDimensions();
   const [aspect, setAspect] = useState<number | null>(null);
 
@@ -40,10 +35,6 @@ export function PhotoCell({
   };
 
   return (
-    // Always a Link so the cell never remounts when toggling select mode
-    // (avoids re-fading every thumbnail). In select mode we cancel the
-    // navigation and toggle selection instead. Long-press opens a peek
-    // preview + context menu (iOS only).
     <Link
       href={`/photos/${photo.id}`}
       asChild
