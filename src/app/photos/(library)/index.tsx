@@ -8,6 +8,7 @@ import { useTabBarHidden } from "@/components/photos/tab-bar-visibility";
 import { PHOTOS } from "@/lib/photos";
 
 const isAndroid = process.env.EXPO_OS === "android";
+const isIOS = process.env.EXPO_OS === "ios";
 
 export default function LibraryScreen() {
   const [selecting, setSelecting] = useState(false);
@@ -24,11 +25,12 @@ export default function LibraryScreen() {
     }
   }, [selecting, selectedCount]);
 
-  // Hide the native tab bar in select mode so the bottom toolbar owns the
-  // bottom edge (the only way out of select mode is the header X).
+  // Hide the native tab bar in iOS select mode so the bottom toolbar owns the
+  // bottom edge (the only way out of select mode is the header X). Android keeps
+  // its tab bar — select actions live in the header there.
   const { setHidden } = useTabBarHidden();
   useEffect(() => {
-    setHidden(selecting);
+    setHidden(isIOS && selecting);
     return () => setHidden(false);
   }, [selecting, setHidden]);
 

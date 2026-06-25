@@ -4,6 +4,7 @@ import { PlatformColor, StyleSheet, View } from "react-native";
 
 import { IOSTransparentHeader } from "@/components/photos/ios-transparent-header";
 import { useHideTabBar } from "@/components/photos/tab-bar-visibility";
+import { useTheme } from "@/hooks/use-theme";
 import { usePhoto } from "@/lib/photos";
 import { toolbarSpacerWidth, useToolbarIcons } from "@/lib/use-toolbar-icons";
 
@@ -12,11 +13,12 @@ const isIOS = process.env.EXPO_OS === "ios";
 export default function PhotoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const photo = usePhoto(id);
+  const theme = useTheme();
 
-  useHideTabBar();
+  useHideTabBar({ ios: true });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <IOSTransparentHeader />
       <Stack.Title style={isIOS ? { color: PlatformColor("label") } : undefined}>
         2 Sep 2025
@@ -34,7 +36,7 @@ export default function PhotoScreen() {
 
 function PhotoDetailToolbar() {
   const icons = useToolbarIcons();
-  if (process.env.EXPO_OS === "web") return null;
+  if (process.env.EXPO_OS !== "ios") return null;
 
   return (
     <>
@@ -78,7 +80,6 @@ function PhotoDetailToolbar() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   image: {
     flex: 1,

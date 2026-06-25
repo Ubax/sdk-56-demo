@@ -7,7 +7,7 @@ import { Colors } from "@/constants/theme";
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "dark" ? "dark" : "light"];
-  const { hidden } = useTabBarHidden({ ios: true });
+  const { hidden } = useTabBarHidden();
 
   return (
     <NativeTabs
