@@ -30,6 +30,8 @@ export default function RootLayout() {
         <Stack.Screen name="health" options={{ headerShown: false }} />
         <Stack.Screen name="photos" options={{ headerShown: false }} />
         <Stack.Screen name="widget-demo" options={{ title: '' }} />
+        <Stack.Screen name="server" options={{ title: 'Server Demo' }} />
+        <Stack.Screen name="secret" options={{ title: 'Secret Loader' }} />
         <Stack.Screen
           name="new-event"
           options={{

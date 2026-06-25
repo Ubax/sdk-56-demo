@@ -25,11 +25,18 @@
       "package": "com.jtkacz.sdk56demo"
     },
     "web": {
-      "output": "static",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": "https://ubax-sdk-56-demo.expo.app",
+          "unstable_useServerMiddleware": true,
+          "unstable_useServerDataLoaders": true
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -45,14 +52,27 @@
         {
           "widgets": [
             {
-              "name": "CounterWidget",
-              "contentMarginsDisabled": true,
-              "displayName": "Counter Widget",
-              "description": "A sample counter home screen widget",
-              "supportedFamilies": [
-                "systemSmall",
-                "systemMedium"
-              ]
+              "name": "SdkWidget",
+              "displayName": "SDK Widget",
+              "description": "Shows an Expo SDK release",
+              "ios": {
+                "contentMarginsDisabled": true,
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ],
+                "configuration": {
+                  "title": "Options",
+                  "description": "Show the prev/next arrows on the medium widget",
+                  "parameters": {
+                    "showButtons": {
+                      "title": "Show arrows",
+                      "type": "boolean",
+                      "default": true
+                    }
+                  }
+                }
+              }
             }
           ]
         }

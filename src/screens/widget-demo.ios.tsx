@@ -8,8 +8,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed/themed-text';
 import { ThemedView } from '@/components/themed/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import CounterWidget from '@/widgets/CounterWidget';
 import DeliveryActivity, { type DeliveryProps } from '@/widgets/DeliveryActivity';
+import SdkWidget from '@/widgets/SdkWidget';
+import { SDKS } from '@/widgets/sdk-widget.data';
+
+// The widget needs local file URIs, so each SDK cover is the bundled asset
+// resolved to its path in the shared container.
+type SdkEntry = { version: number; releaseDate: string; coverUri: string };
 
 // Fake delivery stages the Live Activity steps through automatically. One stage
 // advances every ADVANCE_MS: Preparing -> +5 min On the way -> +5 min Delivered.
@@ -36,31 +41,35 @@ async function ensureImageInSharedStorage(fileName: string, assetModule: number)
 }
 
 export default function WidgetDemoScreen() {
-  const [count, setCount] = useState(0);
-  const [imageUris, setImageUris] = useState<{ logoUri: string; gridUri: string }>();
+  const [sdks, setSdks] = useState<SdkEntry[]>();
+  const [selectedIndex, setSelectedIndex] = useState(SDKS.length - 1); // default to the newest SDK
+  const [logoUri, setLogoUri] = useState<string>();
   const [deliveryRunning, setDeliveryRunning] = useState(false);
   const activityRef = useRef<ReturnType<typeof DeliveryActivity.start> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    // Copy the logo (for the Live Activity) and every SDK cover into the shared
+    // widget container, then push the initial widget snapshot.
     Promise.all([
       ensureImageInSharedStorage('logo.png', require('@/assets/images/logo.png')),
-      ensureImageInSharedStorage('background-grid.png', require('@/assets/images/background-grid.png')),
-    ]).then(([logoUri, gridUri]) => {
-      setImageUris({ logoUri, gridUri });
-      // Push an initial snapshot so the widget has content to render.
-      CounterWidget.updateSnapshot({ count: 0, logoUri, gridUri });
-    });
+      ...SDKS.map((sdk) => ensureImageInSharedStorage(sdk.coverFile, sdk.coverModule)),
+    ]).then(([logo, ...coverUris]) => {
+      setLogoUri(logo);
+      const entries: SdkEntry[] = SDKS.map((sdk, i) => ({
+        version: sdk.version,
+        releaseDate: sdk.releaseDate,
+        coverUri: coverUris[i],
+      }));
+      setSdks(entries);
+      SdkWidget.updateSnapshot({ sdks: entries, index: SDKS.length - 1 });
+    }).catch((e) => console.warn('Could not prepare SDK widget images', e));
   }, []);
 
-  const increment = () => {
-    const nextCount = count + 1;
-    setCount(nextCount);
-    // Snapshot props replace the previous ones entirely, so the image URIs must
-    // be included in every update. Skip the widget update until the images are
-    // ready, otherwise this would blank them out.
-    if (imageUris) {
-      CounterWidget.updateSnapshot({ count: nextCount, ...imageUris });
+  const selectSdk = (index: number) => {
+    setSelectedIndex(index);
+    if (sdks) {
+      SdkWidget.updateSnapshot({ sdks, index });
     }
   };
 
@@ -70,11 +79,11 @@ export default function WidgetDemoScreen() {
     stage,
     startEpochMs,
     etaEpochMs,
-    logoUri: imageUris?.logoUri,
+    logoUri,
   });
 
   const startDelivery = () => {
-    if (!imageUris || deliveryRunning) return; // need the shared logo first
+    if (!logoUri || deliveryRunning) return; // need the shared logo first
     try {
       // Fixed start/arrival times for the whole run: the widget counts the ETA
       // down and fills the progress bar across this window on its own.
@@ -123,22 +132,31 @@ export default function WidgetDemoScreen() {
             Widgets
           </ThemedText>
 
-          <View style={styles.countBlock}>
-            <ThemedText type="small" themeColor="textSecondary">
-              Counter
-            </ThemedText>
-            <ThemedText type="title">{count}</ThemedText>
+          <View style={styles.sdkRow}>
+            {SDKS.map((sdk, index) => (
+              <Pressable
+                key={sdk.version}
+                onPress={() => selectSdk(index)}
+                disabled={!sdks}
+                style={({ pressed }) => [styles.sdkChip, pressed && styles.pressed, !sdks && styles.disabled]}>
+                <ThemedView
+                  type="backgroundElement"
+                  style={[styles.sdkChipInner, index === selectedIndex && styles.sdkChipActive]}>
+                  <ThemedText type="smallBold">SDK {sdk.version}</ThemedText>
+                </ThemedView>
+              </Pressable>
+            ))}
           </View>
-
-          <ActionButton title="Increment and update widget" onPress={increment} />
           <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-            Add the Counter Widget to your home screen, then tap to update it.
+            Add the SDK Widget to your home screen, then pick an SDK here to update it. On the
+            medium widget, use the on-widget arrows to switch SDKs, or long-press → Edit Widget to
+            choose the main text.
           </ThemedText>
 
           <ActionButton
             title={deliveryRunning ? 'Delivery in progress…' : 'Start delivery Live Activity'}
             onPress={startDelivery}
-            disabled={deliveryRunning || !imageUris}
+            disabled={deliveryRunning || !logoUri}
           />
           <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
             Starts a Live Activity that auto-advances through the delivery stages on the Lock Screen
@@ -192,10 +210,25 @@ const styles = StyleSheet.create({
   heading: {
     textAlign: 'center',
   },
-  countBlock: {
+  sdkRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    justifyContent: 'center',
+    paddingVertical: Spacing.two,
+  },
+  sdkChip: {
+    minWidth: 84,
+  },
+  sdkChipInner: {
     alignItems: 'center',
-    gap: Spacing.one,
-    paddingVertical: Spacing.four,
+    borderColor: 'transparent',
+    borderRadius: Spacing.three,
+    borderWidth: 2,
+    paddingVertical: Spacing.three,
+  },
+  sdkChipActive: {
+    borderColor: '#366DF2',
   },
   button: {
     alignItems: 'center',
