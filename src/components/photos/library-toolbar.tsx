@@ -22,6 +22,7 @@ export function LibraryToolbar({
   onStartSelect,
   onExitSelect,
   onSelectAll,
+  onShare,
 }: LibraryToolbarProps) {
   const icons = useToolbarIcons();
   const labelColor = useLabelColor();
@@ -74,7 +75,7 @@ export function LibraryToolbar({
           <Stack.Toolbar.Button
             icon={icons.share}
             disabled={selectedCount === 0}
-            onPress={() => {}}
+            onPress={onShare}
           />
           <Stack.Toolbar.Spacer width={toolbarSpacerWidth} />
           <Stack.Toolbar.View hidesSharedBackground>

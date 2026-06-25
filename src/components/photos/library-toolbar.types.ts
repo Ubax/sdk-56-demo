@@ -7,4 +7,6 @@ export type LibraryToolbarProps = {
   onExitSelect: () => void;
   // Select every photo ("Select All" in the overflow menu).
   onSelectAll: () => void;
+  // Open the share sheet (iOS bottom toolbar share button).
+  onShare: () => void;
 };
