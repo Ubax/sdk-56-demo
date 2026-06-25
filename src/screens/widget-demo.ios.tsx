@@ -5,14 +5,14 @@ import { SymbolView } from 'expo-symbols';
 import { widgetsDirectory } from 'expo-widgets';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed/themed-text';
 import { ThemedView } from '@/components/themed/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import DeliveryActivity, { type DeliveryProps } from '@/widgets/DeliveryActivity';
 import SdkWidget from '@/widgets/SdkWidget';
 import { SDKS } from '@/widgets/sdk-widget.data';
+import { Stack } from 'expo-router';
 
 // The widget needs local file URIs, so each SDK cover is the bundled asset
 // resolved to its path in the shared container.
@@ -167,65 +167,61 @@ export default function WidgetDemoScreen() {
   );
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <SafeAreaView edges={['bottom']} style={styles.safeArea}>
-          <ThemedText type="title" style={styles.heading}>
-            Widgets
-          </ThemedText>
+    <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={styles.scrollContent}
+    >
+      <Stack.Title>Widgets</Stack.Title>
+      <View style={styles.sdkGrid}>
+        {SDKS.map((sdk) => {
+          const selected = selectedVersions.has(sdk.version);
+          return (
+            <Pressable
+              key={sdk.version}
+              onPress={() => toggleSdk(sdk.version)}
+              disabled={!sdks}
+              style={({ pressed }) => [
+                styles.sdkTile,
+                pressed && styles.pressed,
+                !sdks && styles.disabled,
+              ]}
+            >
+              <Image
+                source={sdk.coverModule}
+                style={[styles.sdkCover, !selected && styles.sdkCoverDeselected]}
+                contentFit="cover"
+              />
+              {selected && (
+                <SymbolView
+                  name="checkmark.circle.fill"
+                  size={26}
+                  type="palette"
+                  colors={['#FFFFFF', '#007AFF']}
+                  style={styles.checkmark}
+                />
+              )}
+              <ThemedText type="smallBold" style={styles.sdkLabel}>
+                SDK {sdk.version}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+        Add the SDK Widget to your home screen, then tap SDKs here to choose which appear in it. On
+        the medium widget, use the on-widget arrows to switch between the selected SDKs.
+      </ThemedText>
 
-          <View style={styles.sdkGrid}>
-            {SDKS.map((sdk) => {
-              const selected = selectedVersions.has(sdk.version);
-              return (
-                <Pressable
-                  key={sdk.version}
-                  onPress={() => toggleSdk(sdk.version)}
-                  disabled={!sdks}
-                  style={({ pressed }) => [
-                    styles.sdkTile,
-                    pressed && styles.pressed,
-                    !sdks && styles.disabled,
-                  ]}
-                >
-                  <Image
-                    source={sdk.coverModule}
-                    style={[styles.sdkCover, !selected && styles.sdkCoverDeselected]}
-                    contentFit="cover"
-                  />
-                  {selected && (
-                    <SymbolView
-                      name="checkmark.circle.fill"
-                      size={26}
-                      type="palette"
-                      colors={['#FFFFFF', '#007AFF']}
-                      style={styles.checkmark}
-                    />
-                  )}
-                  <ThemedText type="smallBold" style={styles.sdkLabel}>
-                    SDK {sdk.version}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-            Add the SDK Widget to your home screen, then tap SDKs here to choose which appear in it.
-            On the medium widget, use the on-widget arrows to switch between the selected SDKs.
-          </ThemedText>
-
-          <ActionButton
-            title={deliveryRunning ? 'Delivery in progress…' : 'Start delivery Live Activity'}
-            onPress={startDelivery}
-            disabled={deliveryRunning || !logoUri}
-          />
-          <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-            Starts a Live Activity that auto-advances through the delivery stages on the Lock Screen
-            and Dynamic Island, then dismisses itself.
-          </ThemedText>
-        </SafeAreaView>
-      </ScrollView>
-    </ThemedView>
+      <ActionButton
+        title={deliveryRunning ? 'Delivery in progress…' : 'Start delivery Live Activity'}
+        onPress={startDelivery}
+        disabled={deliveryRunning || !logoUri}
+      />
+      <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+        Starts a Live Activity that auto-advances through the delivery stages on the Lock Screen and
+        Dynamic Island, then dismisses itself.
+      </ThemedText>
+    </ScrollView>
   );
 }
 
@@ -258,16 +254,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: 'center',
     flexGrow: 1,
-    justifyContent: 'center',
-  },
-  safeArea: {
-    alignSelf: 'center',
-    gap: Spacing.three,
-    justifyContent: 'center',
-    maxWidth: MaxContentWidth,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.four,
-    width: '100%',
+    // justifyContent: 'center',
   },
   heading: {
     textAlign: 'center',
@@ -277,7 +265,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
     justifyContent: 'center',
-    paddingVertical: Spacing.two,
+    padding: Spacing.two,
   },
   sdkTile: {
     alignItems: 'center',

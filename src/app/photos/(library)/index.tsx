@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { IOSTransparentHeader } from "@/components/photos/ios-transparent-header";
 import { LibraryToolbar } from "@/components/photos/library-toolbar";
 import { PhotoGrid } from "@/components/photos/photo-grid";
+import { ShareSheet } from "@/components/photos/share-sheet";
 import { useTabBarHidden } from "@/components/photos/tab-bar-visibility";
 import { PHOTOS } from "@/lib/photos";
 
@@ -13,6 +14,7 @@ const isIOS = process.env.EXPO_OS === "ios";
 export default function LibraryScreen() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [sharing, setSharing] = useState(false);
 
   const selectedCount = selected.size;
 
@@ -55,6 +57,7 @@ export default function LibraryScreen() {
   function exitSelection() {
     setSelecting(false);
     setSelected(new Set());
+    setSharing(false);
   }
 
   return (
@@ -68,6 +71,7 @@ export default function LibraryScreen() {
         onStartSelect={() => setSelecting(true)}
         onExitSelect={exitSelection}
         onSelectAll={() => setSelected(new Set(PHOTOS.map((p) => p.id)))}
+        onShare={() => setSharing(true)}
       />
 
       <PhotoGrid
@@ -75,6 +79,12 @@ export default function LibraryScreen() {
         selected={selected}
         onToggle={toggle}
         onLongPress={isAndroid ? startSelection : undefined}
+      />
+
+      <ShareSheet
+        photoIds={[...selected]}
+        isPresented={sharing}
+        onDismiss={() => setSharing(false)}
       />
     </>
   );

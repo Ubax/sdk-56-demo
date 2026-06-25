@@ -183,7 +183,8 @@ function Button({
           ? { backgroundColor: Accent }
           : { borderWidth: 1, borderColor: theme.backgroundSelected },
         (pressed || disabled) && styles.buttonPressed,
-      ]}>
+      ]}
+    >
       {loading ? (
         <ActivityIndicator color={isPrimary ? '#fff' : theme.text} />
       ) : (
