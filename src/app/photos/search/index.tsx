@@ -1,14 +1,31 @@
 import { Stack } from "expo-router";
-import { ScrollView, StyleSheet } from "react-native";
+import { useState } from "react";
+import { ScrollView, StyleSheet, Text } from "react-native";
 
-import { ThemedText } from "@/components/themed/themed-text";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function SearchScreen() {
+  const [query, setQuery] = useState("");
+  const theme = useTheme();
+
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
+    <>
       <Stack.Title large>Search</Stack.Title>
-      <ThemedText style={styles.text}>Search</ThemedText>
-    </ScrollView>
+      {/* Native search field in the header (iOS shows it under the large title). */}
+      <Stack.SearchBar
+        placeholder="Photos, People, Places"
+        onChangeText={(e) => setQuery(e.nativeEvent.text)}
+      />
+
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.content}
+      >
+        <Text style={[styles.text, { color: theme.textSecondary }]}>
+          {query ? `Results for “${query}”` : "Search your photos"}
+        </Text>
+      </ScrollView>
+    </>
   );
 }
 
