@@ -1,17 +1,71 @@
-import { Image } from "expo-image";
+import { Host, Icon, List, ListItem } from "@expo/ui";
 import { Stack } from "expo-router";
-import { SymbolView, type AndroidSymbol, type SFSymbol } from "expo-symbols";
-import type { ReactNode } from "react";
-import { PlatformColor, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
 import { useToolbarIcons } from "@/lib/use-toolbar-icons";
 
-const isIOS = process.env.EXPO_OS === "ios";
+const chevron = Icon.select({
+  ios: "chevron.right",
+  android: import("@expo/material-symbols/chevron_right.xml"),
+});
+
+const COLLECTIONS = [
+  {
+    id: "favorites",
+    title: "Favorites",
+    count: "24 Photos",
+    icon: Icon.select({
+      ios: "heart.fill",
+      android: import("@expo/material-symbols/favorite.xml"),
+    }),
+  },
+  {
+    id: "recents",
+    title: "Recently Saved",
+    count: "108 Items",
+    icon: Icon.select({
+      ios: "clock.fill",
+      android: import("@expo/material-symbols/schedule.xml"),
+    }),
+  },
+  {
+    id: "videos",
+    title: "Videos",
+    count: "32 Videos",
+    icon: Icon.select({
+      ios: "video.fill",
+      android: import("@expo/material-symbols/videocam.xml"),
+    }),
+  },
+  {
+    id: "map",
+    title: "Map",
+    count: "Places",
+    icon: Icon.select({
+      ios: "map.fill",
+      android: import("@expo/material-symbols/map.xml"),
+    }),
+  },
+  {
+    id: "albums",
+    title: "Albums",
+    count: "12 Albums",
+    icon: Icon.select({
+      ios: "folder.fill",
+      android: import("@expo/material-symbols/folder.xml"),
+    }),
+  },
+  {
+    id: "people",
+    title: "People & Pets",
+    count: "8 People",
+    icon: Icon.select({
+      ios: "person.crop.circle.fill",
+      android: import("@expo/material-symbols/account_circle.xml"),
+    }),
+  },
+];
 
 export default function CollectionsScreen() {
-  const theme = useTheme();
   const icons = useToolbarIcons();
 
   return (
@@ -32,261 +86,21 @@ export default function CollectionsScreen() {
         </Stack.Toolbar>
       )}
 
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={styles.content}
-      >
-        <Section title="Memories">
-          <EmptyCard
-            icon={{ ios: "play.circle", android: "play_circle" }}
-            title="No Memories Available"
-            subtitle="Memories will appear here when more photos and videos are added to the library."
-          />
-        </Section>
-
-        <Section
-          title="Pinned"
-          leadingArrow
-          trailing={<Pill label="Edit" onPress={() => {}} />}
-        >
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.pinnedRow}
-          >
-            <PinnedCard label="Favorites" icon={{ ios: "heart.fill", android: "favorite" }} />
-            <PinnedCard label="Recently Saved" imageSeed="lavender-field" />
-            <PinnedCard label="Map" />
-            <PinnedCard label="Trips" />
-          </ScrollView>
-        </Section>
-
-        <Section title="Albums">
-          <EmptyCard
-            icon={{ ios: "folder", android: "folder" }}
-            title="No Albums Available"
-            subtitle="Albums will appear here when they are added to the library, or synced with iCloud."
-            action={<Pill label="Create" onPress={() => {}} />}
-          />
-        </Section>
-
-        <Section title="People & Pets">
-          <Text style={[styles.placeholder, { color: theme.textSecondary }]}>
-            People and pets you tag will appear here.
-          </Text>
-        </Section>
-      </ScrollView>
+      <Host style={{ flex: 1 }}>
+        <List>
+          {COLLECTIONS.map((c) => (
+            <ListItem
+              key={c.id}
+              onPress={() => {}}
+              leading={<Icon name={c.icon} size={22} />}
+              trailing={<Icon name={chevron} size={14} />}
+              supportingText={c.count}
+            >
+              {c.title}
+            </ListItem>
+          ))}
+        </List>
+      </Host>
     </>
   );
 }
-
-// --- building blocks -------------------------------------------------------
-
-type IconName = { ios: SFSymbol; android: AndroidSymbol };
-
-function Section({
-  title,
-  leadingArrow,
-  trailing,
-  children,
-}: {
-  title: string;
-  leadingArrow?: boolean;
-  trailing?: ReactNode;
-  children: ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionTitleRow}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
-          {leadingArrow && (
-            <SymbolView
-              name={{ ios: "chevron.right", android: "chevron_right" }}
-              size={18}
-              tintColor={theme.textSecondary}
-            />
-          )}
-        </View>
-        <View style={styles.sectionAccessories}>
-          {trailing}
-          <SymbolView
-            name={{ ios: "chevron.down", android: "expand_more" }}
-            size={20}
-            tintColor={theme.textSecondary}
-          />
-        </View>
-      </View>
-      {children}
-    </View>
-  );
-}
-
-function EmptyCard({
-  icon,
-  title,
-  subtitle,
-  action,
-}: {
-  icon: IconName;
-  title: string;
-  subtitle: string;
-  action?: ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-      <View style={styles.cardTopRow}>
-        <SymbolView name={icon} size={26} tintColor={theme.textSecondary} />
-        {action}
-      </View>
-      <View>
-        <Text style={[styles.cardTitle, { color: theme.text }]}>{title}</Text>
-        <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>{subtitle}</Text>
-      </View>
-    </View>
-  );
-}
-
-function Pill({ label, onPress }: { label: string; onPress: () => void }) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.pill,
-        { backgroundColor: theme.backgroundSelected },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text style={styles.pillText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function PinnedCard({
-  label,
-  icon,
-  imageSeed,
-}: {
-  label: string;
-  icon?: IconName;
-  imageSeed?: string;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={styles.pinnedCard}>
-      {imageSeed ? (
-        <Image
-          style={StyleSheet.absoluteFill}
-          source={`https://picsum.photos/seed/${imageSeed}/300/300`}
-          contentFit="cover"
-          transition={150}
-        />
-      ) : (
-        <View style={[StyleSheet.absoluteFill, styles.pinnedPlaceholder]} />
-      )}
-      {icon && (
-        <View style={styles.pinnedIcon}>
-          <SymbolView name={icon} size={20} tintColor={theme.text} />
-        </View>
-      )}
-      <Text style={styles.pinnedLabel}>{label}</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  content: {
-    paddingBottom: Spacing.six,
-  },
-  section: {
-    paddingTop: Spacing.four,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.two,
-  },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.one,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  sectionAccessories: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.two,
-  },
-  card: {
-    marginHorizontal: Spacing.four,
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    minHeight: 132,
-    justifyContent: "space-between",
-  },
-  cardTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  pinnedRow: {
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.three,
-  },
-  pinnedCard: {
-    width: 130,
-    height: 130,
-    borderRadius: Spacing.three,
-    overflow: "hidden",
-    justifyContent: "flex-end",
-  },
-  pinnedPlaceholder: {
-    backgroundColor: "#AEB3BB",
-  },
-  pinnedIcon: {
-    position: "absolute",
-    top: Spacing.two,
-    right: Spacing.two,
-  },
-  pinnedLabel: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "600",
-    margin: Spacing.two,
-    textShadowColor: "rgba(0,0,0,0.35)",
-    textShadowRadius: 3,
-  },
-  pill: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.four,
-  },
-  pillText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: isIOS ? PlatformColor("systemBlue") : "#007AFF",
-  },
-  pressed: {
-    opacity: 0.6,
-  },
-  placeholder: {
-    paddingHorizontal: Spacing.four,
-    fontSize: 14,
-  },
-});
