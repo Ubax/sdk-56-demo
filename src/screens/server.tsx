@@ -52,8 +52,11 @@ export default function ServerScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <ThemedView collapsable={false} style={styles.container}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.scrollContent}
+      >
         <SafeAreaView edges={['bottom']} style={styles.safeArea}>
           <ThemedText type="small" themeColor="textSecondary">
             A round-trip through Expo Router&apos;s server: an API route sets an auth cookie, server
